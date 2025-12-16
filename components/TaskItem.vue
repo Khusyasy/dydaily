@@ -3,9 +3,13 @@ defineProps<{
   task: TaskType,
   isDrag: boolean,
   isDragHover: boolean,
+  handleDragStart: () => void,
+  handleDragOver: () => void,
+  handleDrop: () => void,
 }>()
 const { tasks, checkins } = useTaskStore()
 
+// TODO: improve the edit mode, add validation, add temp state while editing
 const editMode = useState('editMode', () => false)
 const clockTime = useState('clockTime', () => new Date())
 
@@ -43,6 +47,7 @@ const taskDetailStreaks = computed(() => {
       const checkin = taskCheckins[i]
       if (!checkin) break
 
+      // TODO: STREAKS IS IDK HOW ITS STILL WRONG
       const nextCheckinTime = checkin.createdAt
       const daysDiff = dayjs(currCheckinTime).diff(dayjs(nextCheckinTime), 'day')
       // console.log(task.task, currCheckinTime, nextCheckinTime, daysDiff)
@@ -107,34 +112,54 @@ function uncheckinTask(id: string) {
 </script>
 
 <template>
-  <li :draggable="!isMobile()"
-    class="flex items-center justify-between rounded shadow cursor-auto sm:cursor-move text-sm sm:text-base" :class="{
+  <li @dragover.prevent="handleDragOver()" @drop="handleDrop()"
+    class="flex items-center justify-between rounded shadow text-sm sm:text-base z-40" :class="{
       'ring': isDrag,
       'bg-blue-50': isDragHover,
       'bg-white hover:bg-gray-50': !isDrag && !isDragHover,
     }">
-    <div class="flex items-center justify-center my-auto mx-1 h-full text-gray-200 sm:text-gray-600">
+    <div v-if="editMode" :draggable="!isMobile() && editMode" @dragstart="handleDragStart()"
+      class="flex items-center justify-center py-4 px-0.5 mx-0.5 h-full text-gray-200 sm:text-gray-600" :class="{
+        'cursor-auto sm:cursor-move': editMode,
+      }">
       <Icon name="mdi:drag-vertical" class="w-5 h-5" />
     </div>
-    <div class="flex-1 flex items-center justify-between py-4 pr-4 gap-4">
+    <div class="flex-1 flex items-center justify-between py-4 pr-4 gap-4" :class="{
+      'pl-9': !editMode
+    }">
       <div class="flex-1 flex flex-col items-start sm:flex-row sm:items-center justify-between ">
-        <h3 class="text-base sm:text-lg font-medium text-gray-900">
+        <h3 v-if="!editMode" class="text-base sm:text-lg font-medium text-gray-900">
           {{ task.task }}
         </h3>
+        <div v-else class="flex flex-row items-start justify-start gap-2 w-full pr-2">
+          <!-- TODO: fix input conflict with drag thingy -->
+          <input v-model="task.task" type="text"
+            class="z-50 block w-1/2 px-2 py-0.5 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-cyan-500 text-base sm:text-lg font-medium text-gray-900" />
+          <input v-model="task.url" type="url"
+            class="z-50 block w-1/2 px-2 py-0.5 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-cyan-500 text-base sm:text-lg font-medium text-gray-900" />
+        </div>
         <div class="flex flex-row-reverse sm:flex-row gap-2 items-end">
-          <p v-if="taskDetailDone[task.id]" class="text-md text-green-700 flex items-center justify-center">
+          <!-- TODO: make the icons to be copyable? -->
+          <span v-if="taskDetailDone[task.id] && !editMode"
+            class="text-md text-green-700 flex items-center justify-center">
             <Icon name="mdi:check" class="w-5 h-5 mr-1" />
             {{ dateFromNow(task.lastCheckin) }}
-          </p>
-          <p v-if="taskDetailStreaks[task.id] ?? 0 > 0"
+          </span>
+          <span v-if="((taskDetailStreaks[task.id] ?? 0) > 0) && !editMode"
             class="text-md text-yellow-600 flex items-center justify-center">
             <Icon name="mdi:fire" class="w-5 h-5 mr-1 text-yellow-500" />
             {{ taskDetailStreaks[task.id] }}
-          </p>
-          <p class="text-md text-gray-600 flex items-center justify-center">
+          </span>
+          <span class="text-md text-gray-600 flex items-center justify-center">
             <Icon name="mdi:refresh" class="w-5 h-5 mr-1" />
-            {{ offsetFormat(task.refreshTime) }}
-          </p>
+            {{ editMode ? '' : offsetFormat(task.refreshTime) }}
+            <select v-if="editMode" v-model="task.refreshTime" id="refresh-time" name="refresh-time" required
+              class="block w-min px-2 py-0.5 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-cyan-500 text-base sm:text-md font-medium text-gray-900">
+              <option v-for="offset in UTC_OFFSETS" :key="offset" :value="offset">
+                {{ offsetFormat(offset) }}
+              </option>
+            </select>
+          </span>
         </div>
       </div>
       <div v-if="!editMode">
@@ -149,7 +174,8 @@ function uncheckinTask(id: string) {
         <button @click.stop.prevent="taskDetailDone[task.id] ? uncheckinTask(task.id) : null"
           aria-label="Uncheck-in task" :disabled="!taskDetailDone[task.id]"
           class="flex items-center justify-center p-2 rounded-s text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200">
-          <Icon name="mdi:close" class="w-5 h-5" />
+          <Icon v-if="taskDetailDone[task.id]" name="mdi:fire-off" class="w-5 h-5" />
+          <Icon v-else name="mdi:minus" class="w-5 h-5" />
         </button>
         <button @click.stop.prevent="removeTask(task.id)" aria-label="Delete task" :disabled="!editMode"
           class="flex items-center justify-center p-2 rounded-e text-red-600 hover:text-red-800 bg-red-100 hover:bg-red-200">
