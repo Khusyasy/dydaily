@@ -80,8 +80,8 @@ const navitems = ref([
 </script>
 
 <template>
-  <header class="w-screen px-4 text-cyan-500 bg-gradient-to-br from-cyan-100/50 to-pink-100/50 shadow">
-    <div class="flex flex-row items-center justify-between h-16 max-w-4xl mx-auto gap-4">
+  <header class="w-full px-4 text-cyan-500 bg-gradient-to-br from-cyan-100/50 to-pink-100/50 shadow">
+    <div class="flex flex-row items-center justify-between h-16 w-full max-w-4xl mx-auto gap-4">
       <div class="flex flex-row items-center h-full px-2">
         <img src="/logo.svg" alt="Logo" class="h-10 w-10" />
         <h1 class="pl-2 text-lg font-bold">DyDaily</h1>
