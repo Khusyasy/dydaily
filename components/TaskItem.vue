@@ -14,23 +14,20 @@ const editMode = useState('editMode', () => false)
 const clockTime = useState('clockTime', () => new Date())
 
 const taskDetailDone = computed(() => {
-  const temp: Record<string, boolean> = {}
+  const doneMap: Record<string, boolean> = {}
   tasks.value.forEach(task => {
     if (!task.lastCheckin) {
-      temp[task.id] = false
+      doneMap[task.id] = false
       return
     }
 
     const offset = task.refreshTime
+    const currTZDay = dateToTZDay(clockTime.value.getTime(), offset)
+    const lastTZDay = dateToTZDay(task.lastCheckin, offset)
 
-    const now = dayjs(clockTime.value.getTime())
-    const refreshUTC = now.utc().utcOffset(offset).hour(0).minute(0).second(0).millisecond(0)
-    const lastCheckinUTC = dayjs(task.lastCheckin).utc().utcOffset(offset)
-
-    const sameDay = lastCheckinUTC.isSame(refreshUTC, 'day')
-    temp[task.id] = sameDay
+    doneMap[task.id] = lastTZDay.isSame(currTZDay, 'day')
   })
-  return temp
+  return doneMap
 })
 
 const taskDetailStreaks = computed(() => {
@@ -38,26 +35,42 @@ const taskDetailStreaks = computed(() => {
   tasks.value.forEach(task => {
     const taskCheckins = checkins.value.filter(checkin => checkin.taskId === task.id)
     counts[task.id] = 0
+
     if (taskCheckins.length === 0) {
       return
     }
-    let currCheckinTime = taskDetailDone.value[task.id] && task.lastCheckin ? new Date(task.lastCheckin) : new Date()
+
+    let currentStreak = 1
+
     // assumed sorted by time ascending
-    for (let i = taskCheckins.length - 1; i >= 0; i--) {
-      const checkin = taskCheckins[i]
-      if (!checkin) break
+    for (let i = taskCheckins.length - 1; i > 0; i--) {
+      const currCheckin = taskCheckins[i]
+      const prevCheckin = taskCheckins[i - 1]
+      if (!currCheckin || !prevCheckin) break
 
-      // TODO: STREAKS IS IDK HOW ITS STILL WRONG
-      const nextCheckinTime = checkin.createdAt
-      const daysDiff = dayjs(currCheckinTime).diff(dayjs(nextCheckinTime), 'day')
-      // console.log(task.task, currCheckinTime, nextCheckinTime, daysDiff)
+      const offset = task.refreshTime
+      const currTZDay = dateToTZDay(currCheckin.createdAt, offset)
+      const prevTZDay = dateToTZDay(prevCheckin.createdAt, offset)
+      const daysDiff = currTZDay.diff(prevTZDay, 'day')
+      // console.log(task.task, currTZDay.toISOString(), prevTZDay.toISOString(), daysDiff)
 
-      if (daysDiff >= 0 && daysDiff < 2) {
-        counts[task.id] = (counts[task.id] ?? 0) + 1;
-        currCheckinTime = nextCheckinTime
+      if (daysDiff === 0) {
+        continue
+      } else if (daysDiff === 1) {
+        currentStreak++
       } else {
         break
       }
+    }
+
+    const lastCheckin = taskCheckins[taskCheckins.length - 1]
+    if (lastCheckin) {
+      const offset = task.refreshTime
+      const currTZDay = dateToTZDay(clockTime.value.getTime(), offset)
+      const lastTZDay = dateToTZDay(lastCheckin.createdAt, offset)
+      const daysSinceLast = currTZDay.diff(lastTZDay, 'day')
+  
+      if (daysSinceLast <= 1) counts[task.id] = currentStreak
     }
   })
   return counts
@@ -146,8 +159,8 @@ function uncheckinTask(id: string) {
             {{ dateFromNow(task.lastCheckin) }}
           </span>
           <span v-if="((taskDetailStreaks[task.id] ?? 0) > 0) && !editMode"
-            class="text-md text-yellow-600 flex items-center justify-center">
-            <Icon name="mdi:fire" class="w-5 h-5 mr-1 text-yellow-500" />
+            class="text-md flex items-center justify-center" :class="{'text-yellow-600': taskDetailDone[task.id], 'text-gray-600': !taskDetailDone[task.id]}">
+            <Icon name="mdi:fire" class="w-5 h-5 mr-1" :class="{'text-yellow-500': taskDetailDone[task.id], 'text-gray-500': !taskDetailDone[task.id]}" />
             {{ taskDetailStreaks[task.id] }}
           </span>
           <span class="text-md text-gray-600 flex items-center justify-center">
