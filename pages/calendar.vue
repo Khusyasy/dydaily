@@ -45,7 +45,7 @@ const selectedAll = computed({
 })
 onMounted(() => {
   tasks.value.forEach(t => {
-    selected.value[t.id] = true
+    selected.value[t.id] = false
   })
 })
 
@@ -53,7 +53,7 @@ type taskCItem = {
   task: TaskType,
   color: string,
 }
-const tasksC = computed(() => {
+const tasksMap = computed(() => {
   const map: Record<string, taskCItem> = {}
   tasks.value.forEach(t => {
     map[t.id] = {
@@ -64,6 +64,7 @@ const tasksC = computed(() => {
   return map
 })
 
+// map[date][taskId]
 const checkinsInDate = computed(() => {
   const defaultTaskMap: Record<string, boolean> = {}
   tasks.value.forEach(t => {
@@ -72,31 +73,41 @@ const checkinsInDate = computed(() => {
     }
   })
 
-  const map: Record<string, Record<string, boolean>> = {}
+  const dateMap: Record<string, Record<string, boolean>> = {}
   for (let i = 1; i <= datesInMonth.value; i++) {
-    map[i] = { ...defaultTaskMap }
+    dateMap[i] = { ...defaultTaskMap }
   }
 
   const checkinsInMonth = checkins.value.filter(c => {
-    const task = tasksC.value[c.taskId]?.task
+    const task = tasksMap.value[c.taskId]?.task
     if (!task) return false
 
     const time = dayjs(c.createdAt).utc().utcOffset(task.refreshTime || 0)
     return time.year() === year.value && (time.month() + 1) === month.value
   })
   checkinsInMonth.forEach(c => {
-    const task = tasksC.value[c.taskId]?.task
+    const task = tasksMap.value[c.taskId]?.task
     if (!task) return
 
     const time = dayjs(c.createdAt).utc().utcOffset(task.refreshTime || 0)
     const date = time.date()
 
-    if (map[date] && selected.value[c.taskId]) {
-      map[date][c.taskId] = true
+    if (dateMap[date] && selected.value[c.taskId]) {
+      dateMap[date][c.taskId] = true
     }
   })
 
-  return map
+  return dateMap
+})
+
+const onlyOneID = computed(()=>{
+  const ids = tasks.value.map(t => {
+    return selected.value[t.id] ? t.id : null
+  }).filter(x => x !== null)
+  if (ids.length !== 1) {
+    return ''
+  }
+  return ids[0] ?? ''
 })
 
 </script>
@@ -114,10 +125,11 @@ const checkinsInDate = computed(() => {
           </label>
         </div>
         <div class="flex flex-row flex-wrap gap-x-2 gap-y-1">
+          <!-- TODO: fix checkbox click hitbox to be full div -->
           <div v-for="task in tasks" :key="task.id"
             class="flex items-center justify-start gap-2 rounded bg-cyan-50 px-2 py-1 border" :style="{
-              accentColor: tasksC[task.id]?.color,
-              borderColor: selected[task.id] ? tasksC[task.id]?.color : 'transparent'
+              accentColor: tasksMap[task.id]?.color,
+              borderColor: selected[task.id] ? tasksMap[task.id]?.color : 'transparent'
             }">
             <input type="checkbox" name="selectedTasks" :id="'task-' + task.id" v-model="selected[task.id]"
               class="h-4 w-4 rounded" />
@@ -157,16 +169,21 @@ const checkinsInDate = computed(() => {
         <div class="font-semibold text-center text-cyan-900">Fri</div>
         <div class="font-semibold text-center text-cyan-900">Sat</div>
         <div v-for="n in firstDayOfMonth" :key="'empty-' + n" class="border border-gray-200 p-2 h-20 rounded"></div>
-        <div v-for="date in datesInMonth" :key="date" class="border border-cyan-200 p-2 h-20 rounded flex flex-col"
+        <div v-for="date in datesInMonth" :key="date" class="border-2 border-cyan-200 p-2 h-20 rounded flex flex-col"
           :class="{
-            'border-green-500': year == nowYear && month == nowMonth && date == nowDate
-          }">
-          <div class="text-sm mb-1 font-semibold">{{ date }}</div>
-          <div class="flex flex-row gap-1 flex-wrap overflow-y-auto">
+            'border-green-500': year == nowYear && month == nowMonth && date == nowDate,
+          }" style="background-color: var(--bg-color)" :style="{
+                '--bg-color': checkinsInDate[date]?.[onlyOneID] ? tasksMap[onlyOneID]?.color : 'transparent',
+              }">
+          <div class="text-sm mb-1 font-semibold" :class="{
+            'text-black': checkinsInDate[date]?.[onlyOneID] && hexContrastBlack(tasksMap[onlyOneID]?.color),
+            'text-white': checkinsInDate[date]?.[onlyOneID] && !hexContrastBlack(tasksMap[onlyOneID]?.color),
+          }">{{ date }}</div>
+          <div v-if="!onlyOneID" class="flex flex-row gap-1 flex-wrap overflow-y-auto">
             <div v-for="(done, taskId) in checkinsInDate[date]" class="text-xs rounded h-4 w-4 border-2"
               style="background-color: var(--bg-color); border-color: var(--color);" :style="{
-                '--color': tasksC[taskId]?.color,
-                '--bg-color': done ? tasksC[taskId]?.color : 'transparent',
+                '--color': tasksMap[taskId]?.color,
+                '--bg-color': done ? tasksMap[taskId]?.color : 'transparent',
               }"></div>
           </div>
         </div>
