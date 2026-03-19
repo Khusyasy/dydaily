@@ -117,8 +117,8 @@ const onlyOneID = computed(()=>{
 </script>
 
 <template>
-  <!-- TODO: implement mobile responsive ui -->
   <div>
+    <!-- TODO: implement mobile responsive ui -->
     <div class="max-w-4xl mx-auto my-2 bg-cyan-50/50 shadow rounded p-4">
       <div class="mb-1">
         <label for="selectAll" class="mb-1 flex items-center justify-start gap-2 px-2">

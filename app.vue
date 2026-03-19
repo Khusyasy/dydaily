@@ -3,7 +3,7 @@ useHead({
   title: 'DyDaily',
   meta: [
     { name: 'description', content: 'Simple App to Track Your Dailies' },
-    { name: 'viewport', content: 'width=device-width, initial-scale=1' }
+    { name: 'viewport', content: 'width=device-width, initial-scale=1' },
   ],
 })
 
@@ -20,7 +20,12 @@ useHead({
   <NuxtPwaManifest />
   <div class="min-h-screen bg-white">
     <Header />
-    <NuxtPage />
+    <NuxtPage
+      :transition="{
+        name: 'page',
+        mode: 'out-in',
+      }"
+    />
   </div>
   <ConfirmModal />
 </template>

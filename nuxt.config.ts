@@ -12,7 +12,7 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@vite-pwa/nuxt',
   ],
-  css: ['~/assets/css/reset.css', '~/assets/css/tailwind.css'],
+  css: ['~/assets/css/reset.css', '~/assets/css/tailwind.css', '~/assets/css/main.css'],
   tailwindcss: {
     // Options
   },
