@@ -43,6 +43,10 @@ const selectedAll = computed({
     })
   }
 })
+const selectedSome = computed(() => {
+  return tasks.value.length > 0 && tasks.value.some(t => selected.value[t.id]) && !selectedAll.value
+})
+
 onMounted(() => {
   tasks.value.forEach(t => {
     selected.value[t.id] = false
@@ -117,24 +121,23 @@ const onlyOneID = computed(()=>{
   <div>
     <div class="max-w-4xl mx-auto my-2 bg-cyan-50/50 shadow rounded p-4">
       <div class="mb-1">
-        <div class="mb-1 flex items-center justify-start gap-2 px-2">
-          <input type="checkbox" name="selectAll" id="selectAll" v-model="selectedAll"
+        <label for="selectAll" class="mb-1 flex items-center justify-start gap-2 px-2">
+          <input type="checkbox" name="selectAll" id="selectAll" v-model="selectedAll" :indeterminate="selectedSome"
             class="h-4 w-4 rounded accent-cyan-500" />
-          <label for="selectAll" class="mb-1 font-semibold">
+          <span class="mb-1 font-semibold">
             Select Tasks
-          </label>
-        </div>
+          </span>
+        </label>
         <div class="flex flex-row flex-wrap gap-x-2 gap-y-1">
-          <!-- TODO: fix checkbox click hitbox to be full div -->
-          <div v-for="task in tasks" :key="task.id"
+          <label v-for="task in tasks" :key="task.id" :for="'task-' + task.id"
             class="flex items-center justify-start gap-2 rounded bg-cyan-50 px-2 py-1 border" :style="{
               accentColor: tasksMap[task.id]?.color,
-              borderColor: selected[task.id] ? tasksMap[task.id]?.color : 'transparent'
+              borderColor: selected[task.id] ? tasksMap[task.id]?.color : 'lightgray'
             }">
             <input type="checkbox" name="selectedTasks" :id="'task-' + task.id" v-model="selected[task.id]"
               class="h-4 w-4 rounded" />
-            <label :for="'task-' + task.id">{{ task.task }}</label>
-          </div>
+            <span>{{ task.task }}</span>
+          </label>
         </div>
       </div>
     </div>
