@@ -16,6 +16,16 @@ export default defineNuxtConfig({
   tailwindcss: {
     // Options
   },
+  eslint: {
+    config: {
+      stylistic: {
+        semi: false,
+        quotes: 'single',
+        indent: 2,
+        commaDangle: 'always-multiline',
+      }
+    }
+  },
   pwa: {
     manifest: {
       "name": "Do your Daily Tracker",

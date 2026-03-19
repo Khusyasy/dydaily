@@ -104,7 +104,7 @@ const checkinsInDate = computed(() => {
   return dateMap
 })
 
-const onlyOneID = computed(()=>{
+const onlyOneID = computed(() => {
   const ids = tasks.value.map(t => {
     return selected.value[t.id] ? t.id : null
   }).filter(x => x !== null)
@@ -122,8 +122,8 @@ const onlyOneID = computed(()=>{
     <div class="max-w-4xl mx-auto my-2 bg-cyan-50/50 shadow rounded p-4">
       <div class="mb-1">
         <label for="selectAll" class="mb-1 flex items-center justify-start gap-2 px-2">
-          <input type="checkbox" name="selectAll" id="selectAll" v-model="selectedAll" :indeterminate="selectedSome"
-            class="h-4 w-4 rounded accent-cyan-500" />
+          <input id="selectAll" v-model="selectedAll" type="checkbox" name="selectAll" :indeterminate="selectedSome"
+            class="h-4 w-4 rounded accent-cyan-500">
           <span class="mb-1 font-semibold">
             Select Tasks
           </span>
@@ -134,8 +134,8 @@ const onlyOneID = computed(()=>{
               accentColor: tasksMap[task.id]?.color,
               borderColor: selected[task.id] ? tasksMap[task.id]?.color : 'lightgray'
             }">
-            <input type="checkbox" name="selectedTasks" :id="'task-' + task.id" v-model="selected[task.id]"
-              class="h-4 w-4 rounded" />
+            <input :id="'task-' + task.id" v-model="selected[task.id]" type="checkbox" name="selectedTasks"
+              class="h-4 w-4 rounded">
             <span>{{ task.task }}</span>
           </label>
         </div>
@@ -150,15 +150,17 @@ const onlyOneID = computed(()=>{
         <div class="flex flex-row items-center justify-center gap-2" :class="{
           'bg-green-100': year == nowYear && month == nowMonth
         }">
-          <button @click="prevMonth"
-            class="p-2 rounded-s font-semibold flex items-center justify-center text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <button
+            class="p-2 rounded-s font-semibold flex items-center justify-center text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @click="prevMonth">
             <Icon name="mdi:chevron-left" class="w-4 h-4" />
           </button>
           <h3 class="font-semibold p-2">
             {{ year }}-{{ month }}
           </h3>
-          <button @click="nextMonth"
-            class="p-2 rounded-e font-semibold flex items-center justify-center text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <button
+            class="p-2 rounded-e font-semibold flex items-center justify-center text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            @click="nextMonth">
             <Icon name="mdi:chevron-right" class="w-4 h-4" />
           </button>
         </div>
@@ -171,28 +173,27 @@ const onlyOneID = computed(()=>{
         <div class="font-semibold text-center text-cyan-900">Thu</div>
         <div class="font-semibold text-center text-cyan-900">Fri</div>
         <div class="font-semibold text-center text-cyan-900">Sat</div>
-        <div v-for="n in firstDayOfMonth" :key="'empty-' + n" class="border border-gray-200 p-2 h-20 rounded"></div>
+        <div v-for="n in firstDayOfMonth" :key="'empty-' + n" class="border border-gray-200 p-2 h-20 rounded" />
         <div v-for="date in datesInMonth" :key="date" class="border-2 border-cyan-200 p-2 h-20 rounded flex flex-col"
           :class="{
             'border-green-500': year == nowYear && month == nowMonth && date == nowDate,
           }" style="background-color: var(--bg-color)" :style="{
-                '--bg-color': checkinsInDate[date]?.[onlyOneID] ? tasksMap[onlyOneID]?.color : 'transparent',
-              }">
+            '--bg-color': checkinsInDate[date]?.[onlyOneID] ? tasksMap[onlyOneID]?.color : 'transparent',
+          }">
           <div class="text-sm mb-1 font-semibold" :class="{
             'text-black': checkinsInDate[date]?.[onlyOneID] && hexContrastBlack(tasksMap[onlyOneID]?.color),
             'text-white': checkinsInDate[date]?.[onlyOneID] && !hexContrastBlack(tasksMap[onlyOneID]?.color),
           }">{{ date }}</div>
           <div v-if="!onlyOneID" class="flex flex-row gap-1 flex-wrap overflow-y-auto">
-            <div v-for="(done, taskId) in checkinsInDate[date]" class="text-xs rounded h-4 w-4 border-2"
+            <div v-for="(done, taskId) in checkinsInDate[date]" :key="taskId" class="text-xs rounded h-4 w-4 border-2"
               style="background-color: var(--bg-color); border-color: var(--color);" :style="{
                 '--color': tasksMap[taskId]?.color,
                 '--bg-color': done ? tasksMap[taskId]?.color : 'transparent',
-              }"></div>
+              }" />
           </div>
         </div>
         <div v-for="n in emptyDaysComplete" :key="'empty-complete-' + n"
-          class="border border-gray-200 p-2 h-20 rounded">
-        </div>
+          class="border border-gray-200 p-2 h-20 rounded" />
       </div>
     </div>
   </div>

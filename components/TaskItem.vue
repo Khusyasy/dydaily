@@ -69,7 +69,7 @@ const taskDetailStreaks = computed(() => {
       const currTZDay = dateToTZDay(clockTime.value.getTime(), offset)
       const lastTZDay = dateToTZDay(lastCheckin.createdAt, offset)
       const daysSinceLast = currTZDay.diff(lastTZDay, 'day')
-  
+
       if (daysSinceLast <= 1) counts[task.id] = currentStreak
     }
   })
@@ -116,8 +116,8 @@ function checkinTask(id: string) {
 async function uncheckinTask(id: string) {
   const task = tasks.value.find(task => task.id === id)
   if (!task) return
-  
-  
+
+
   const confirmed = await confirm.open({
     title: 'Uncheckin',
     message: `Remove last checkin for the task "${task.task}"? This action cannot be undone.`
@@ -138,16 +138,15 @@ const isMobile = useIsMobile()
 </script>
 
 <template>
-  <li @dragover.prevent="handleDragOver()" @drop="handleDrop()"
-    class="flex items-center justify-between rounded shadow text-sm sm:text-base z-40" :class="{
-      'ring': isDrag,
-      'bg-blue-50': isDragHover,
-      'bg-white hover:bg-gray-50': !isDrag && !isDragHover,
-    }">
-    <div v-if="editMode" :draggable="!isMobile && editMode" @dragstart="handleDragStart()"
+  <li class="flex items-center justify-between rounded shadow text-sm sm:text-base z-40" :class="{
+    'ring': isDrag,
+    'bg-blue-50': isDragHover,
+    'bg-white hover:bg-gray-50': !isDrag && !isDragHover,
+  }" @dragover.prevent="handleDragOver()" @drop="handleDrop()">
+    <div v-if="editMode" :draggable="!isMobile && editMode"
       class="flex items-center justify-center py-4 px-0.5 mx-0.5 h-full text-gray-200 sm:text-gray-600" :class="{
         'cursor-auto sm:cursor-move': editMode,
-      }">
+      }" @dragstart="handleDragStart()">
       <Icon name="mdi:drag-vertical" class="w-5 h-5" />
     </div>
     <div class="flex-1 flex items-center justify-between py-4 pr-4 gap-4" :class="{
@@ -160,9 +159,9 @@ const isMobile = useIsMobile()
         <div v-else class="flex flex-row items-start justify-start gap-2 w-full pr-2">
           <!-- TODO: fix input conflict with drag thingy -->
           <input v-model="task.task" type="text"
-            class="z-40 block w-1/2 px-2 py-0.5 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-cyan-500 text-base sm:text-lg font-medium text-gray-900" />
+            class="z-40 block w-1/2 px-2 py-0.5 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-cyan-500 text-base sm:text-lg font-medium text-gray-900">
           <input v-model="task.url" type="url"
-            class="z-40 block w-1/2 px-2 py-0.5 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-cyan-500 text-base sm:text-lg font-medium text-gray-900" />
+            class="z-40 block w-1/2 px-2 py-0.5 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-cyan-500 text-base sm:text-lg font-medium text-gray-900">
         </div>
         <div class="flex flex-row-reverse sm:flex-row gap-2 items-end">
           <!-- TODO: make the icons to be copyable? -->
@@ -172,14 +171,16 @@ const isMobile = useIsMobile()
             {{ dateFromNow(task.lastCheckin) }}
           </span>
           <span v-if="((taskDetailStreaks[task.id] ?? 0) > 0) && !editMode"
-            class="text-md flex items-center justify-center" :class="{'text-yellow-600': taskDetailDone[task.id], 'text-gray-600': !taskDetailDone[task.id]}">
-            <Icon name="mdi:fire" class="w-5 h-5 mr-1" :class="{'text-yellow-500': taskDetailDone[task.id], 'text-gray-500': !taskDetailDone[task.id]}" />
+            class="text-md flex items-center justify-center"
+            :class="{ 'text-yellow-600': taskDetailDone[task.id], 'text-gray-600': !taskDetailDone[task.id] }">
+            <Icon name="mdi:fire" class="w-5 h-5 mr-1"
+              :class="{ 'text-yellow-500': taskDetailDone[task.id], 'text-gray-500': !taskDetailDone[task.id] }" />
             {{ taskDetailStreaks[task.id] }}
           </span>
           <span class="text-md text-gray-600 flex items-center justify-center">
             <Icon name="mdi:refresh" class="w-5 h-5 mr-1" />
             {{ editMode ? '' : offsetFormat(task.refreshTime) }}
-            <select v-if="editMode" v-model="task.refreshTime" id="refresh-time" name="refresh-time" required
+            <select v-if="editMode" id="refresh-time" v-model="task.refreshTime" name="refresh-time" required
               class="block w-min px-2 py-0.5 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-cyan-500 text-base sm:text-md font-medium text-gray-900">
               <option v-for="offset in UTC_OFFSETS" :key="offset" :value="offset">
                 {{ offsetFormat(offset) }}
@@ -189,22 +190,24 @@ const isMobile = useIsMobile()
         </div>
       </div>
       <div v-if="!editMode">
-        <button @click.stop.prevent="checkinTask(task.id)" :aria-label="task.url ? 'Open URL' : 'Check-in task'"
-          class="flex items-center justify-center p-2 rounded text-cyan-600 hover:text-cyan-800 bg-cyan-100 hover:bg-cyan-200">
+        <button :aria-label="task.url ? 'Open URL' : 'Check-in task'"
+          class="flex items-center justify-center p-2 rounded text-cyan-600 hover:text-cyan-800 bg-cyan-100 hover:bg-cyan-200"
+          @click.stop.prevent="checkinTask(task.id)">
           <Icon v-if="taskDetailDone[task.id]" name="mdi:check-bold" class="w-5 h-5" />
           <Icon v-else-if="task.url" name="mdi:share-variant" class="w-5 h-5" />
           <Icon v-else name="mdi:send-outline" class="w-5 h-5" />
         </button>
       </div>
       <div v-if="editMode" class="flex flex-row items-center">
-        <button @click.stop.prevent="taskDetailDone[task.id] ? uncheckinTask(task.id) : null"
-          aria-label="Uncheck-in task" :disabled="!taskDetailDone[task.id]"
-          class="flex items-center justify-center p-2 rounded-s text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200">
+        <button aria-label="Uncheck-in task" :disabled="!taskDetailDone[task.id]"
+          class="flex items-center justify-center p-2 rounded-s text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200"
+          @click.stop.prevent="taskDetailDone[task.id] ? uncheckinTask(task.id) : null">
           <Icon v-if="taskDetailDone[task.id]" name="mdi:fire-off" class="w-5 h-5" />
           <Icon v-else name="mdi:minus" class="w-5 h-5" />
         </button>
-        <button @click.stop.prevent="removeTask(task.id)" aria-label="Delete task" :disabled="!editMode"
-          class="flex items-center justify-center p-2 rounded-e text-red-600 hover:text-red-800 bg-red-100 hover:bg-red-200">
+        <button aria-label="Delete task" :disabled="!editMode"
+          class="flex items-center justify-center p-2 rounded-e text-red-600 hover:text-red-800 bg-red-100 hover:bg-red-200"
+          @click.stop.prevent="removeTask(task.id)">
           <Icon name="mdi:delete" class="w-5 h-5" />
         </button>
       </div>

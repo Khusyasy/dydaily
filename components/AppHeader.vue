@@ -89,7 +89,7 @@ const isMobile = useIsMobile()
   <header class="w-full px-4 text-cyan-500 bg-gradient-to-br from-cyan-100/50 to-pink-100/50 shadow">
     <div class="flex flex-row items-center justify-between h-16 w-full max-w-4xl mx-auto gap-4">
       <div class="flex flex-row items-center h-full px-2">
-        <img src="/logo.svg" alt="Logo" class="h-10 w-10" />
+        <img src="/logo.svg" alt="Logo" class="h-10 w-10">
         <h1 class="pl-2 text-lg font-bold">DyDaily</h1>
       </div>
       <div class="flex flex-row items-center justify-start flex-1 h-full">
@@ -100,12 +100,14 @@ const isMobile = useIsMobile()
         </NuxtLink>
       </div>
       <div class="flex flex-row items-center">
-        <button @click="handleExport" aria-label="Export tasks"
-          class="p-2 rounded-s font-semibold flex items-center justify-center text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button aria-label="Export tasks"
+          class="p-2 rounded-s font-semibold flex items-center justify-center text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          @click="handleExport">
           <Icon name="mdi:content-save" class="w-5 h-5" />
         </button>
-        <button @click="handleImport" aria-label="Import tasks"
-          class="p-2 rounded-e font-semibold flex items-center justify-center text-white bg-cyan-500 hover:bg-cyan-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button aria-label="Import tasks"
+          class="p-2 rounded-e font-semibold flex items-center justify-center text-white bg-cyan-500 hover:bg-cyan-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          @click="handleImport">
           <Icon name="mdi:upload" class="w-5 h-5" />
         </button>
       </div>

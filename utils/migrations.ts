@@ -41,6 +41,7 @@ MIGRATIONS.set(2, (data) => {
   // karena createdAt ga mungkin didapetin, asumsi pakai waktu checkin yang paling lama
   data.tasks = data.tasks.map((task) => {
     // assumsi sorted ascending
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let firstCheckin: any = null
     for (let i = 0; i < data.checkins.length; i++) {
       const checkin = data.checkins[i]
