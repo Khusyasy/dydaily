@@ -83,7 +83,7 @@ function handleSubmit() {
     </form>
 
     <div class="max-w-4xl mx-auto my-2 bg-cyan-50/50 shadow rounded relative">
-      <div class="flex items-center justify-between sticky top-0 px-4 py-2 bg-cyan-50/50 backdrop-blur z-50">
+      <div class="flex items-center justify-between sticky top-0 px-4 py-2 bg-cyan-50/50 backdrop-blur z-40">
         <h2 class="text-lg font-semibold text-gray-800">
           Tasks
         </h2>

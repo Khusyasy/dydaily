@@ -18,19 +18,23 @@ function handleExport() {
   URL.revokeObjectURL(url)
 }
 
+const confirm = useConfirm()
+
 function handleImport() {
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = '.json'
-  input.onchange = (event: Event) => {
+  input.onchange = async (event: Event) => {
     if (!(event.target instanceof HTMLInputElement)) {
       return
     }
 
     const file = event.target?.files?.[0]
-
-    // TODO: change confirm with better ui
-    if (!file || !confirm('Importing data will delete ALL existing data and it cannot be undone. Make sure you have a backup. Continue?')) {
+    const confirmed = await confirm.open({
+      title: 'Import',
+      message: 'Importing data will delete ALL existing data and it cannot be undone. Make sure you have a backup.'
+    })
+    if (!file || !confirmed) {
       return
     }
 

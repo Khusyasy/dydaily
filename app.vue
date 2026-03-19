@@ -22,4 +22,5 @@ useHead({
     <Header />
     <NuxtPage />
   </div>
+  <ConfirmModal />
 </template>

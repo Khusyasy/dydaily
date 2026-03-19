@@ -76,12 +76,18 @@ const taskDetailStreaks = computed(() => {
   return counts
 })
 
-function removeTask(id: string) {
+const confirm = useConfirm()
+
+async function removeTask(id: string) {
   const index = tasks.value.findIndex(task => task.id === id)
   const task = tasks.value[index]
   if (!task) return
-  // TODO: change confirm with better ui
-  if (!confirm(`Are you sure you want to delete the task "${task.task}"? This action cannot be undone.`)) {
+
+  const confirmed = await confirm.open({
+    title: 'Delete',
+    message: `Delete the task "${task.task}"? This action cannot be undone.`
+  })
+  if (!confirmed) {
     return
   }
 
@@ -107,11 +113,16 @@ function checkinTask(id: string) {
   }
 }
 
-function uncheckinTask(id: string) {
+async function uncheckinTask(id: string) {
   const task = tasks.value.find(task => task.id === id)
   if (!task) return
-  // TODO: change confirm with better ui
-  if (!confirm(`Are you sure you want to remove last checkin for the task "${task.task}"? This action cannot be undone.`)) {
+  
+  
+  const confirmed = await confirm.open({
+    title: 'Uncheckin',
+    message: `Remove last checkin for the task "${task.task}"? This action cannot be undone.`
+  })
+  if (!confirmed) {
     return
   }
   if (!taskDetailDone.value[id]) return
@@ -147,9 +158,9 @@ function uncheckinTask(id: string) {
         <div v-else class="flex flex-row items-start justify-start gap-2 w-full pr-2">
           <!-- TODO: fix input conflict with drag thingy -->
           <input v-model="task.task" type="text"
-            class="z-50 block w-1/2 px-2 py-0.5 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-cyan-500 text-base sm:text-lg font-medium text-gray-900" />
+            class="z-40 block w-1/2 px-2 py-0.5 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-cyan-500 text-base sm:text-lg font-medium text-gray-900" />
           <input v-model="task.url" type="url"
-            class="z-50 block w-1/2 px-2 py-0.5 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-cyan-500 text-base sm:text-lg font-medium text-gray-900" />
+            class="z-40 block w-1/2 px-2 py-0.5 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-cyan-500 text-base sm:text-lg font-medium text-gray-900" />
         </div>
         <div class="flex flex-row-reverse sm:flex-row gap-2 items-end">
           <!-- TODO: make the icons to be copyable? -->
