@@ -133,6 +133,8 @@ async function uncheckinTask(id: string) {
   checkins.value.splice(checkinIndex, 1)
   task.lastCheckin = null
 }
+
+const isMobile = useIsMobile()
 </script>
 
 <template>
@@ -142,7 +144,7 @@ async function uncheckinTask(id: string) {
       'bg-blue-50': isDragHover,
       'bg-white hover:bg-gray-50': !isDrag && !isDragHover,
     }">
-    <div v-if="editMode" :draggable="!isMobile() && editMode" @dragstart="handleDragStart()"
+    <div v-if="editMode" :draggable="!isMobile && editMode" @dragstart="handleDragStart()"
       class="flex items-center justify-center py-4 px-0.5 mx-0.5 h-full text-gray-200 sm:text-gray-600" :class="{
         'cursor-auto sm:cursor-move': editMode,
       }">

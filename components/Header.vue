@@ -81,6 +81,8 @@ const navitems = ref([
   { name: 'Tasks', to: '/', icon: 'mdi:clipboard-check' },
   { name: 'Calendar', to: '/calendar', icon: 'mdi:calendar' },
 ])
+
+const isMobile = useIsMobile()
 </script>
 
 <template>
@@ -91,11 +93,10 @@ const navitems = ref([
         <h1 class="pl-2 text-lg font-bold">DyDaily</h1>
       </div>
       <div class="flex flex-row items-center justify-start flex-1 h-full">
-        <!-- TODO: add page transition or no?? -->
         <NuxtLink v-for="item in navitems" :key="item.name" :to="item.to"
           class="h-full px-4 flex items-center hover:bg-cyan-100/50" active-class="bg-cyan-200/50">
           <Icon :name="item.icon" class="w-5 h-5" />
-          <span v-if="!isMobile()" class="ml-1 font-semibold">{{ item.name }}</span>
+          <span v-if="!isMobile" class="ml-1 font-semibold">{{ item.name }}</span>
         </NuxtLink>
       </div>
       <div class="flex flex-row items-center">

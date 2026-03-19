@@ -3,12 +3,14 @@ const { tasks } = useTaskStore()
 
 const editMode = useState('editMode', () => false)
 
+const isMobile = useIsMobile()
+
 // reorder with drag and drop
 const dragIndex = ref(-1)
 const dragHoverIndex = ref(-1)
 function handleDragStart(index: number) {
   return () => {
-    if (isMobile()) return
+    if (isMobile.value) return
     if (!editMode.value) return
 
     dragIndex.value = index
@@ -17,7 +19,7 @@ function handleDragStart(index: number) {
 }
 function handleDragOver(index: number) {
   return () => {
-    if (isMobile()) return
+    if (isMobile.value) return
     if (!editMode.value) return
 
     if (dragIndex.value > -1) {
@@ -29,7 +31,7 @@ function handleDragOver(index: number) {
 }
 function handleDrop(index: number) {
   return () => {
-    if (isMobile()) return
+    if (isMobile.value) return
     if (!editMode.value) return
 
     const draggedTask = tasks.value[dragIndex.value]
