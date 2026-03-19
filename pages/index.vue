@@ -11,25 +11,6 @@ const form = ref<{
 })
 
 const editMode = useState('editMode', () => false)
-const clockTime = useState('clockTime', () => new Date())
-
-let clockTimeout: ReturnType<typeof setTimeout>
-const clockSync = () => {
-  const now = new Date()
-  now.setMilliseconds(0)
-  clockTime.value = now
-
-  const msToNextSecond = 1000 - new Date().getMilliseconds()
-  clockTimeout = setTimeout(clockSync, msToNextSecond)
-}
-onMounted(() => {
-  const now = new Date()
-  now.setMilliseconds(0)
-  clockTime.value = now
-  const msToNextSecond = 1000 - new Date().getMilliseconds()
-  clockTimeout = setTimeout(clockSync, msToNextSecond)
-})
-onUnmounted(() => clearTimeout(clockTimeout))
 
 function handleSubmit() {
   if (!form.value.task || form.value.refreshTime === '') {
@@ -129,9 +110,7 @@ function handleSubmit() {
         <h2 class="text-lg font-semibold text-gray-800">
           Tasks
         </h2>
-        <p class="text-lg font-bold text-gray-800">
-          {{ timeFormat(clockTime) }}
-        </p>
+        <ClockDisplay />
         <button aria-label="Toggle edit mode"
                 class="ml-2 flex items-center justify-center rounded p-2 text-sm font-medium"
                 :class="{
