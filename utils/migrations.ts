@@ -12,7 +12,8 @@ MIGRATIONS.set(1, (data) => {
     let offset = 0
     if (hours >= 0 && hours <= 12) {
       offset = hours
-    } else if (hours >= 13 && hours <= 23) {
+    }
+    else if (hours >= 13 && hours <= 23) {
       offset = hours - 24
     }
 
@@ -20,7 +21,8 @@ MIGRATIONS.set(1, (data) => {
 
     if (offset < -12) {
       offset = offset + 24
-    } else if (offset > 12) {
+    }
+    else if (offset > 12) {
       offset = offset - 24
     }
 

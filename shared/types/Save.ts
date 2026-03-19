@@ -14,16 +14,16 @@ export type SaveType = z.infer<typeof SaveSchema>
 export const TaskSchema = z.object({
   id: z.string(),
   task: z.string(),
-  url: z.union([z.literal(""), z.url()]),
+  url: z.union([z.literal(''), z.url()]),
   refreshTime: z.int().min(-12).max(14),
   lastCheckin: z.preprocess((arg) => {
-    if (typeof arg === "string") {
+    if (typeof arg === 'string') {
       return new Date(arg)
     }
-    return null;
+    return null
   }, z.date().nullable()),
   createdAt: z.preprocess((arg: string) => new Date(arg), z.date()),
-});
+})
 export type TaskType = z.infer<typeof TaskSchema>
 
 export const TasksSchema = z.array(TaskSchema)

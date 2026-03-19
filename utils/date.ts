@@ -39,4 +39,4 @@ export const dateToTZDay = (date: Date | number, refreshTime: number): dayjs.Day
   return dayjs(date).utc().utcOffset(refreshTime).startOf('day')
 }
 
-export { dayjs };
+export { dayjs }

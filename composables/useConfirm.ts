@@ -4,14 +4,14 @@ export const useConfirm = () => {
   const message = useState('confirm-message', () => 'Confirm Message')
   const resolver = useState<((value: boolean) => void) | null>(
     'confirm-resolver',
-    () => null
+    () => null,
   )
 
-  function open(options: { title: string; message: string }) {
+  function open(options: { title: string, message: string }) {
     title.value = options.title
     message.value = options.message
     isVisible.value = true
-    return new Promise<boolean>(resolve => {
+    return new Promise<boolean>((resolve) => {
       resolver.value = resolve
     })
   }

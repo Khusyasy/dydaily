@@ -19,7 +19,7 @@ useHead({
 <template>
   <NuxtPwaManifest />
   <div class="min-h-screen bg-white">
-    <Header />
+    <AppHeader />
     <NuxtPage
       :transition="{
         name: 'page',

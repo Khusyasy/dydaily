@@ -24,7 +24,8 @@ function handleDragOver(index: number) {
 
     if (dragIndex.value > -1) {
       dragHoverIndex.value = index
-    } else {
+    }
+    else {
       dragHoverIndex.value = -1
     }
   }
@@ -49,10 +50,19 @@ function handleDrop(index: number) {
 
 <template>
   <ul class="space-y-2 px-4 py-2">
-    <TaskItem v-for="(task, index) in tasks" :key="task.id" :task="task" :index="index"
-      :handle-drag-start="handleDragStart(index)" :handle-drag-over="handleDragOver(index)"
-      :handle-drop="handleDrop(index)" :is-drag="dragIndex === index" :is-drag-hover="dragHoverIndex === index" />
-    <li v-if="tasks.length === 0" class="text-gray-500 text-center p-4">
+    <TaskItem v-for="(task, index) in tasks"
+              :key="task.id"
+              :task="task"
+              :index="index"
+              :handle-drag-start="handleDragStart(index)"
+              :handle-drag-over="handleDragOver(index)"
+              :handle-drop="handleDrop(index)"
+              :is-drag="dragIndex === index"
+              :is-drag-hover="dragHoverIndex === index"
+    />
+    <li v-if="tasks.length === 0"
+        class="p-4 text-center text-gray-500"
+    >
       No tasks added yet.
     </li>
   </ul>

@@ -3,8 +3,8 @@ const colourMemo: Record<string, string> = {}
 export function stringToHexColor(str: string) {
   if (colourMemo[str]) return colourMemo[str]
 
-  let hash = 0;
-  str.split('').forEach(char => {
+  let hash = 0
+  str.split('').forEach((char) => {
     hash = char.charCodeAt(0) + ((hash << 5) - hash)
   })
 
@@ -32,7 +32,8 @@ export function hexContrastBlack(str: string | undefined): boolean {
 
   if ((red * 0.299 + green * 0.587 + blue * 0.114) > 150) {
     contrastMemo[str] = 'black'
-  } else {
+  }
+  else {
     contrastMemo[str] = 'white'
   }
   return contrastMemo[str] === 'black'

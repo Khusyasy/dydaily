@@ -44,7 +44,8 @@ export function loadTaskStore() {
     version.value = saveData.version
     tasks.value = saveData.tasks
     checkins.value = saveData.checkins
-  } else {
+  }
+  else {
     // just load
     const resTasks = TasksSchema.safeParse(parsedTasks)
     tasks.value = resTasks.success ? resTasks.data : []
