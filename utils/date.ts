@@ -34,9 +34,23 @@ export const offsetFormat = (offset: number) => {
     .format('HH:00')
 }
 
-// TODO: probably need to refactor so it doesnt return dayjs directly
-export const dateToTZDay = (date: Date | number, refreshTime: number): dayjs.Dayjs => {
-  return dayjs(date).utc().utcOffset(refreshTime).startOf('day')
+export const getTZDate = (date: Date | number, offset: number) => {
+  const d = dayjs(date).utc().utcOffset(offset)
+  return {
+    year: d.year(),
+    month: d.month() + 1,
+    date: d.date(),
+  }
 }
 
-export { dayjs }
+export const isSameTZDay = (a: Date | number, b: Date | number, offset: number): boolean => {
+  const dateA = dayjs(a).utc().utcOffset(offset).startOf('day')
+  const dateB = dayjs(b).utc().utcOffset(offset).startOf('day')
+  return dateA.isSame(dateB, 'day')
+}
+
+export const diffTZDays = (a: Date | number, b: Date | number, offset: number): number => {
+  const dateA = dayjs(a).utc().utcOffset(offset).startOf('day')
+  const dateB = dayjs(b).utc().utcOffset(offset).startOf('day')
+  return dateA.diff(dateB, 'day')
+}

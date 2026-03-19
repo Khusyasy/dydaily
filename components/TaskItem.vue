@@ -21,11 +21,7 @@ const taskDetailDone = computed(() => {
       return
     }
 
-    const offset = task.refreshTime
-    const currTZDay = dateToTZDay(clockTime.value.getTime(), offset)
-    const lastTZDay = dateToTZDay(task.lastCheckin, offset)
-
-    doneMap[task.id] = lastTZDay.isSame(currTZDay, 'day')
+    doneMap[task.id] = isSameTZDay(task.lastCheckin, clockTime.value, task.refreshTime)
   })
   return doneMap
 })
@@ -48,11 +44,7 @@ const taskDetailStreaks = computed(() => {
       const prevCheckin = taskCheckins[i - 1]
       if (!currCheckin || !prevCheckin) break
 
-      const offset = task.refreshTime
-      const currTZDay = dateToTZDay(currCheckin.createdAt, offset)
-      const prevTZDay = dateToTZDay(prevCheckin.createdAt, offset)
-      const daysDiff = currTZDay.diff(prevTZDay, 'day')
-      // console.log(task.task, currTZDay.toISOString(), prevTZDay.toISOString(), daysDiff)
+      const daysDiff = diffTZDays(currCheckin.createdAt, prevCheckin.createdAt, task.refreshTime)
 
       if (daysDiff === 0) {
         continue
@@ -67,10 +59,7 @@ const taskDetailStreaks = computed(() => {
 
     const lastCheckin = taskCheckins[taskCheckins.length - 1]
     if (lastCheckin) {
-      const offset = task.refreshTime
-      const currTZDay = dateToTZDay(clockTime.value.getTime(), offset)
-      const lastTZDay = dateToTZDay(lastCheckin.createdAt, offset)
-      const daysSinceLast = currTZDay.diff(lastTZDay, 'day')
+      const daysSinceLast = diffTZDays(clockTime.value, lastCheckin.createdAt, task.refreshTime)
 
       if (daysSinceLast <= 1) counts[task.id] = currentStreak
     }
