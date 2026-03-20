@@ -11,7 +11,7 @@ const { tasks, checkins } = useTaskStore()
 
 // TODO: improve the edit mode, add validation, add temp state while editing
 const editMode = useState('editMode', () => false)
-const clockTime = useState('clockTime', () => new Date())
+const clockTime = useClock()
 
 const taskDetailDone = computed(() => {
   const doneMap: Record<string, boolean> = {}
