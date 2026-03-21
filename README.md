@@ -1,14 +1,14 @@
 # Do your Daily (DyDaily)
 
-DyDaily is a simple tracker web app for completing daily login quest that is usually found in many Gacha / Online games (Genshin, ZZZ, Blue Archive, etc).
+DyDaily is a simple tracker web app for making any task possible to have a streak counter like in daily quest that is usually found in many Gacha / Online games (Genshin, ZZZ, Blue Archive, etc).
 
 ## Features
 
 ### Daily Tracker with Streak Counter
 
-- Add tasks with name and server refresh time, with optional url
-- Mark your task when completed, url task will both open and mark it
-- Streak counter *(currently kinda buggy...)*
+- Add tasks with name and refresh time, with optional url
+- Checkin to your task to mark as done, task with url will both open the url and mark it
+- Streak counter
 
 ![DyDaily Preview 1](/docs/dydaily-preview-1.jpg)
 
@@ -17,8 +17,13 @@ DyDaily is a simple tracker web app for completing daily login quest that is usu
 ### Calendar View
 
 - Show all completion with a monthly calendar view
+- Late checkins (you can use it whenever but be honest to yourself!)
 
 ![DyDaily Preview 3](/docs/dydaily-preview-3.jpg)
+
+![DyDaily Preview 4](/docs/dydaily-preview-4.jpg)
+
+![DyDaily Preview 5](/docs/dydaily-preview-5.jpg)
 
 ### Data Export / Import
 
@@ -32,12 +37,10 @@ DyDaily is a simple tracker web app for completing daily login quest that is usu
 - DyDaily works fully offline after the first load
 
 ## Future Plans
-1. Task Editing
-2. Streak Logic Improvement
-3. Streak Break Protection
-4. Reminders / Notifications
-5. Dark Mode
-6. and more... suggestions are welcome!
+1. Task Editing Improvement
+2. Reminders / Notifications
+3. Dark Mode
+4. and more... suggestions are welcome!
 
 ## Tech Stack
 - Language: TypeScript
@@ -53,19 +56,19 @@ DyDaily is a simple tracker web app for completing daily login quest that is usu
 ### Install
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Development Server
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ### Build
 
 ```bash
-npm run generate
+pnpm generate
 ```
 
 or 
@@ -77,5 +80,3 @@ npx nuxt build --preset github_pages
 ## Deploy to Github Pages
 
 This repo uses Github Action based on the official documentation [here](https://nuxt.com/deploy/github-pages)
-
-

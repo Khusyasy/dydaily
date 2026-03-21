@@ -120,6 +120,7 @@ async function uncheckinTask(id: string) {
   }
   if (!taskDetailDone.value[id]) return
 
+  // TODO: fix gabisa gara" lastCheckin null
   const checkinIndex = checkins.value.findIndex((checkin) => {
     return checkin.taskId === id && task.lastCheckin && checkin.createdAt.getTime() === task.lastCheckin.getTime()
   })
