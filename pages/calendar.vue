@@ -47,6 +47,15 @@ const selectedAll = computed({
 const selectedSome = computed(() => {
   return tasks.value.length > 0 && tasks.value.some(t => selected.value[t.id]) && !selectedAll.value
 })
+const selectedOnlyOneID = computed(() => {
+  const ids = tasks.value.map((t) => {
+    return selected.value[t.id] ? t.id : null
+  }).filter(x => x !== null)
+  if (ids.length !== 1) {
+    return ''
+  }
+  return ids[0] ?? ''
+})
 
 onMounted(() => {
   tasks.value.forEach((t) => {
@@ -103,15 +112,65 @@ const checkinsInDate = computed(() => {
   return dateMap
 })
 
-const onlyOneID = computed(() => {
-  const ids = tasks.value.map((t) => {
-    return selected.value[t.id] ? t.id : null
-  }).filter(x => x !== null)
-  if (ids.length !== 1) {
-    return ''
+const editMode = useState('editMode', () => false)
+const confirm = useConfirm()
+
+async function handleLateCheckin(date: number) {
+  const task = tasksMap.value[selectedOnlyOneID.value]?.task
+  if (!task) return
+
+  const checkedin = checkinsInDate.value[date]?.[task.id]
+  if (checkedin) return
+
+  const lateUTC = Date.UTC(year.value, month.value - 1, date, task.refreshTime, 0, 0, 0)
+  const lateDate = new Date(lateUTC)
+
+  const confirmed = await confirm.open({
+    title: 'Late Checkin',
+    message: `Add late checkin for the task "${task.task}" at ${dateFormat(lateDate)}?`,
+  })
+  if (!confirmed) return
+
+  checkins.value.push({
+    id: generateId(8),
+    taskId: task.id,
+    createdAt: lateDate,
+    late: true,
+  })
+  // sorted by time ascending
+  checkins.value.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+}
+
+async function handleUncheckin(date: number) {
+  const task = tasksMap.value[selectedOnlyOneID.value]?.task
+  if (!task) return
+
+  const checkedin = checkinsInDate.value[date]?.[task.id]
+  if (!checkedin) return
+
+  const findUTC = Date.UTC(year.value, month.value - 1, date, task.refreshTime, 0, 0, 0)
+
+  const checkinIndex = checkins.value.findIndex((checkin) => {
+    const checkUTC = new Date(checkin.createdAt).setUTCHours(task.refreshTime, 0, 0, 0)
+    return checkin.taskId === task.id && checkUTC === findUTC
+  })
+  if (checkinIndex === -1) return
+
+  const confirmed = await confirm.open({
+    title: 'Uncheckin',
+    message: `Remove checkin for the task "${task.task}" at ${dateFormat(findUTC)}? This action cannot be undone.`,
+  })
+  if (!confirmed) return
+  checkins.value.splice(checkinIndex, 1)
+
+  if (task.lastCheckin) {
+    const checkLastUTC = new Date(task.lastCheckin).setUTCHours(task.refreshTime, 0, 0, 0)
+    if (checkLastUTC === findUTC) {
+      task.lastCheckin = null
+      // TODO: harusnya last checkin ambil aja yang sebelumnya
+    }
   }
-  return ids[0] ?? ''
-})
+}
 </script>
 
 <template>
@@ -119,20 +178,42 @@ const onlyOneID = computed(() => {
     <!-- TODO: implement mobile responsive ui -->
     <div class="mx-auto my-2 max-w-4xl rounded bg-cyan-50/50 p-4 shadow">
       <div class="mb-1">
-        <label for="selectAll"
-               class="mb-1 flex items-center justify-start gap-2 px-2"
-        >
-          <input id="selectAll"
-                 v-model="selectedAll"
-                 type="checkbox"
-                 name="selectAll"
-                 :indeterminate="selectedSome"
-                 class="h-4 w-4 rounded accent-cyan-500"
+        <div class="mb-1 flex flex-row items-center justify-between gap-2 ps-2">
+          <label for="selectAll"
+                 class="flex items-center justify-start gap-2"
           >
-          <span class="mb-1 font-semibold">
-            Select Tasks
-          </span>
-        </label>
+            <input id="selectAll"
+                   v-model="selectedAll"
+                   type="checkbox"
+                   name="selectAll"
+                   :indeterminate="selectedSome"
+                   class="h-4 w-4 rounded accent-cyan-500"
+            >
+            <span class="mb-1 font-semibold">
+              Select Tasks
+            </span>
+          </label>
+          <div class="flex items-center justify-center gap-2">
+            <span v-if="editMode && !selectedOnlyOneID"
+                  class="text-sm text-red-400"
+            >
+              Select only one task to do edits
+            </span>
+            <button
+              class="flex items-center justify-center rounded p-1 text-sm"
+              :class="{
+                'bg-red-100 text-red-600 hover:bg-red-100 hover:text-red-600': !editMode,
+                'bg-red-500 text-red-100 hover:bg-red-600 hover:text-red-100': editMode,
+              }"
+
+              @click="editMode = !editMode"
+            >
+              <Icon name="mdi:note-edit"
+                    class="h-4 w-4"
+              />
+            </button>
+          </div>
+        </div>
         <div class="flex flex-row flex-wrap gap-x-2 gap-y-1">
           <label v-for="task in tasks"
                  :key="task.id"
@@ -220,18 +301,38 @@ const onlyOneID = computed(() => {
              }"
              style="background-color: var(--bg-color)"
              :style="{
-               '--bg-color': checkinsInDate[date]?.[onlyOneID] ? tasksMap[onlyOneID]?.color : 'transparent',
+               '--bg-color': checkinsInDate[date]?.[selectedOnlyOneID] ? tasksMap[selectedOnlyOneID]?.color : 'transparent',
              }"
         >
           <div class="mb-1 text-sm font-semibold"
                :class="{
-                 'text-black': checkinsInDate[date]?.[onlyOneID] && hexContrastBlack(tasksMap[onlyOneID]?.color),
-                 'text-white': checkinsInDate[date]?.[onlyOneID] && !hexContrastBlack(tasksMap[onlyOneID]?.color),
+                 'text-black': checkinsInDate[date]?.[selectedOnlyOneID] && hexContrastBlack(tasksMap[selectedOnlyOneID]?.color),
+                 'text-white': checkinsInDate[date]?.[selectedOnlyOneID] && !hexContrastBlack(tasksMap[selectedOnlyOneID]?.color),
                }"
           >
             {{ date }}
           </div>
-          <div v-if="!onlyOneID"
+          <div v-if="editMode && selectedOnlyOneID && date <= nowDate && !checkinsInDate[date]?.[selectedOnlyOneID]">
+            <button class="flex items-center justify-center gap-0.5 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 hover:bg-gray-200 hover:text-gray-800"
+                    @click="handleLateCheckin(date)"
+            >
+              <Icon name="mdi:clock-alert-outline"
+                    class="h-4 w-4"
+              />
+              Late?
+            </button>
+          </div>
+          <div v-if="editMode && selectedOnlyOneID && date <= nowDate && checkinsInDate[date]?.[selectedOnlyOneID]">
+            <button class="flex items-center justify-center gap-0.5 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 hover:bg-gray-200 hover:text-gray-800"
+                    @click="handleUncheckin(date)"
+            >
+              <Icon name="mdi:fire-off"
+                    class="h-4 w-4"
+              />
+              Uncheckin
+            </button>
+          </div>
+          <div v-if="!selectedOnlyOneID"
                class="flex flex-row flex-wrap gap-1 overflow-y-auto"
           >
             <div v-for="(done, taskId) in checkinsInDate[date]"

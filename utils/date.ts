@@ -25,6 +25,11 @@ export const timeFormat = (date: Date | null) => {
   return dayjs(date).format('HH:mm:ss')
 }
 
+export const dateFormat = (date: Date | number | null) => {
+  if (!date) return '-'
+  return dayjs(date).format('DD MMM YYYY')
+}
+
 export const offsetFormat = (offset: number) => {
   return dayjs('2003-11-05') // fixed date just to get offset
     .utc()

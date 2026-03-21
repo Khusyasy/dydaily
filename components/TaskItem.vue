@@ -100,8 +100,11 @@ function checkinTask(id: string) {
       id: generateId(8),
       taskId: task.id,
       createdAt: now,
+      late: false,
     })
   }
+  // sorted by time ascending
+  checkins.value.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
 }
 
 async function uncheckinTask(id: string) {
@@ -122,6 +125,7 @@ async function uncheckinTask(id: string) {
   })
   checkins.value.splice(checkinIndex, 1)
   task.lastCheckin = null
+  // TODO: harusnya last checkin ambil aja yang sebelumnya
 }
 
 const isMobile = useIsMobile()

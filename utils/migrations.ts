@@ -62,6 +62,18 @@ MIGRATIONS.set(2, (data) => {
   return data
 })
 
+// 3 -> 4: checkins add 'late' mark buat fitur late checkin
+MIGRATIONS.set(3, (data) => {
+  data.checkins = data.checkins.map((checkin) => {
+    // asumsi semuanya bukan late karena fiturnya baru ada di versi ini
+    checkin.late = false
+    return checkin
+  })
+
+  data.version = 4
+  return data
+})
+
 export function handleMigration(data: SaveType): SaveType {
   let currData = data
   while (currData.version < LATEST_SAVE_VERSION) {

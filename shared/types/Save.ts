@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const LATEST_SAVE_VERSION = 3
+export const LATEST_SAVE_VERSION = 4
 
 export const SaveSchema = z.object({
   version: z.number(),
@@ -33,6 +33,7 @@ export const CheckinSchema = z.object({
   id: z.string(),
   taskId: z.string(),
   createdAt: z.preprocess((arg: string) => new Date(arg), z.date()),
+  late: z.boolean(),
 })
 export type CheckinType = z.infer<typeof CheckinSchema>
 
