@@ -113,6 +113,15 @@ const checkinsInDate = computed(() => {
 })
 
 const editMode = useState('editMode', () => false)
+const showEdit = computed(() => {
+  return [...Array(datesInMonth.value + 1).keys()].map((date) => {
+    if (selectedOnlyOneID.value === '') return false
+    const before = (year.value < nowYear.value || month.value < nowMonth.value)
+    const same = (year.value === nowYear.value && month.value === nowMonth.value && date < nowDate.value)
+    return editMode.value && selectedOnlyOneID.value !== '' && (before || same)
+  })
+})
+
 const confirm = useConfirm()
 
 async function handleLateCheckin(date: number) {
@@ -162,14 +171,6 @@ async function handleUncheckin(date: number) {
   })
   if (!confirmed) return
   checkins.value.splice(checkinIndex, 1)
-
-  if (task.lastCheckin) {
-    const checkLastUTC = new Date(task.lastCheckin).setUTCHours(task.refreshTime, 0, 0, 0)
-    if (checkLastUTC === findUTC) {
-      task.lastCheckin = null
-      // TODO: harusnya last checkin ambil aja yang sebelumnya
-    }
-  }
 }
 </script>
 
@@ -312,7 +313,7 @@ async function handleUncheckin(date: number) {
           >
             {{ date }}
           </div>
-          <div v-if="editMode && selectedOnlyOneID && date <= nowDate && !checkinsInDate[date]?.[selectedOnlyOneID]">
+          <div v-if="showEdit[date] && !checkinsInDate[date]?.[selectedOnlyOneID]">
             <button class="flex items-center justify-center gap-0.5 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 hover:bg-gray-200 hover:text-gray-800"
                     @click="handleLateCheckin(date)"
             >
@@ -322,7 +323,7 @@ async function handleUncheckin(date: number) {
               Late?
             </button>
           </div>
-          <div v-if="editMode && selectedOnlyOneID && date <= nowDate && checkinsInDate[date]?.[selectedOnlyOneID]">
+          <div v-if="showEdit[date] && checkinsInDate[date]?.[selectedOnlyOneID]">
             <button class="flex items-center justify-center gap-0.5 rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 hover:bg-gray-200 hover:text-gray-800"
                     @click="handleUncheckin(date)"
             >

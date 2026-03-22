@@ -120,13 +120,17 @@ async function uncheckinTask(id: string) {
   }
   if (!taskDetailDone.value[id]) return
 
-  // TODO: fix gabisa gara" lastCheckin null
   const checkinIndex = checkins.value.findIndex((checkin) => {
     return checkin.taskId === id && task.lastCheckin && checkin.createdAt.getTime() === task.lastCheckin.getTime()
   })
   checkins.value.splice(checkinIndex, 1)
-  task.lastCheckin = null
-  // TODO: harusnya last checkin ambil aja yang sebelumnya
+  for (let i = checkins.value.length - 1; i >= 0; i--) {
+    const checkin = checkins.value[i]!
+    if (checkin.taskId === id) {
+      task.lastCheckin = checkin.createdAt
+      break
+    }
+  }
 }
 
 const isMobile = useIsMobile()
