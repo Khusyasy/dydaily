@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   task: TaskType
   isDrag: boolean
   isDragHover: boolean
@@ -9,10 +9,45 @@ defineProps<{
 }>()
 const { tasks, checkins } = useTaskStore()
 
-// TODO: improve the edit mode, add validation, add temp state while editing
 const editMode = useState('editMode', () => false)
+
+const form = ref<{
+  task: string
+  url: string
+  refreshTime: '' | number
+}>({
+  task: props.task.task,
+  url: props.task.url,
+  refreshTime: props.task.refreshTime,
+})
+
+const isEdited = computed(() => {
+  return form.value.task !== props.task.task || form.value.url !== props.task.url || form.value.refreshTime !== props.task.refreshTime
+})
+
+const confirm = useConfirm()
+
+async function handleSubmit() {
+  if (!form.value.task || form.value.refreshTime === '') {
+    return
+  }
+
+  if (props.task.refreshTime !== form.value.refreshTime) {
+    const confirmed = await confirm.open({
+      title: 'Update Task',
+      message: 'If you change the refresh time it might effect the checkins and streaks you have... are you okay with this?',
+    })
+    if (!confirmed) return
+  }
+
+  props.task.task = form.value.task
+  props.task.url = form.value.url
+  props.task.refreshTime = form.value.refreshTime
+}
+
 const clockTime = useClock()
 
+// TODO: optimize this? isnt this run loop for all but for each item, i forgor this from refactoring index page
 const taskDetailDone = computed(() => {
   const doneMap: Record<string, boolean> = {}
   tasks.value.forEach((task) => {
@@ -26,6 +61,7 @@ const taskDetailDone = computed(() => {
   return doneMap
 })
 
+// TODO: optimize this? isnt this run loop for all but for each item, i forgor this from refactoring index page
 const taskDetailStreaks = computed(() => {
   const counts: Record<string, number> = {}
   tasks.value.forEach((task) => {
@@ -66,8 +102,6 @@ const taskDetailStreaks = computed(() => {
   })
   return counts
 })
-
-const confirm = useConfirm()
 
 async function removeTask(id: string) {
   const index = tasks.value.findIndex(task => task.id === id)
@@ -158,10 +192,11 @@ const isMobile = useIsMobile()
             class="h-5 w-5"
       />
     </div>
-    <div class="flex flex-1 items-center justify-between gap-4 py-4 pr-4"
-         :class="{
-           'pl-9': !editMode,
-         }"
+    <form class="flex flex-1 items-center justify-between gap-4 py-4 pr-4"
+          :class="{
+            'pl-9': !editMode,
+          }"
+          @submit.prevent="handleSubmit"
     >
       <div class="flex flex-1 flex-col items-start justify-between sm:flex-row sm:items-center ">
         <h3 v-if="!editMode"
@@ -172,12 +207,11 @@ const isMobile = useIsMobile()
         <div v-else
              class="flex w-full flex-row items-start justify-start gap-2 pr-2"
         >
-          <!-- TODO: fix input conflict with drag thingy -->
-          <input v-model="task.task"
+          <input v-model="form.task"
                  type="text"
                  class="z-40 block w-1/2 rounded-md border border-gray-300 px-2 py-0.5 text-base font-medium text-gray-900 focus:border-cyan-500 focus:outline-none focus:ring-blue-500 sm:text-lg"
           >
-          <input v-model="task.url"
+          <input v-model="form.url"
                  type="url"
                  class="z-40 block w-1/2 rounded-md border border-gray-300 px-2 py-0.5 text-base font-medium text-gray-900 focus:border-cyan-500 focus:outline-none focus:ring-blue-500 sm:text-lg"
           >
@@ -209,7 +243,7 @@ const isMobile = useIsMobile()
             {{ editMode ? '' : offsetFormat(task.refreshTime) }}
             <select v-if="editMode"
                     id="refresh-time"
-                    v-model="task.refreshTime"
+                    v-model="form.refreshTime"
                     name="refresh-time"
                     required
                     class="block w-min rounded-md border border-gray-300 px-2 py-0.5 text-base font-medium text-gray-900 focus:border-cyan-500 focus:outline-none focus:ring-blue-500 sm:text-base"
@@ -246,9 +280,30 @@ const isMobile = useIsMobile()
       <div v-if="editMode"
            class="flex flex-row items-center"
       >
+        <button aria-label="Save task"
+                :disabled="!isEdited"
+                class="flex items-center justify-center rounded-s p-2"
+                :class="{
+                  'bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-800': isEdited,
+                  'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-500': !isEdited,
+                }"
+        >
+          <Icon v-if="isEdited"
+                name="mdi:content-save-alert"
+                class="h-5 w-5"
+          />
+          <Icon v-else
+                name="mdi:content-save"
+                class="h-5 w-5"
+          />
+        </button>
         <button aria-label="Uncheck-in task"
                 :disabled="!taskDetailDone[task.id]"
-                class="flex items-center justify-center rounded-s bg-gray-100 p-2 text-gray-600 hover:bg-gray-200 hover:text-gray-800"
+                class="flex items-center justify-center rounded-none p-2 "
+                :class="{
+                  'bg-orange-100  text-orange-600 hover:bg-orange-200 hover:text-orange-800': taskDetailDone[task.id],
+                  'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-500': !taskDetailDone[task.id],
+                }"
                 @click.stop.prevent="taskDetailDone[task.id] ? uncheckinTask(task.id) : null"
         >
           <Icon v-if="taskDetailDone[task.id]"
@@ -270,6 +325,6 @@ const isMobile = useIsMobile()
           />
         </button>
       </div>
-    </div>
+    </form>
   </li>
 </template>

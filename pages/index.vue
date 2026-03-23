@@ -44,7 +44,7 @@ function handleSubmit() {
         <label for="task"
                class="block text-sm font-medium text-gray-700"
         >
-          Task
+          Task<span class="text-red-600">*</span>
         </label>
         <input id="task"
                v-model="form.task"
@@ -59,7 +59,7 @@ function handleSubmit() {
         <label for="url"
                class="block text-sm font-medium text-gray-700"
         >
-          URL (optional)
+          URL
         </label>
         <input id="url"
                v-model="form.url"
@@ -73,7 +73,7 @@ function handleSubmit() {
         <label for="refresh-time"
                class="block text-sm font-medium text-gray-700"
         >
-          Refresh Time (UTC)
+          Refresh Time (Local)<span class="text-red-600">*</span>
         </label>
         <select id="refresh-time"
                 v-model="form.refreshTime"
