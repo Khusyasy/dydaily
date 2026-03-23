@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{
+const { task } = defineProps<{
   task: TaskType
   isDrag: boolean
   isDragHover: boolean
@@ -7,6 +7,7 @@ const props = defineProps<{
   handleDragOver: () => void
   handleDrop: () => void
 }>()
+
 const { tasks, checkins } = useTaskStore()
 
 const editMode = useState('editMode', () => false)
@@ -16,13 +17,13 @@ const form = ref<{
   url: string
   refreshTime: '' | number
 }>({
-  task: props.task.task,
-  url: props.task.url,
-  refreshTime: props.task.refreshTime,
+  task: task.task,
+  url: task.url,
+  refreshTime: task.refreshTime,
 })
 
 const isEdited = computed(() => {
-  return form.value.task !== props.task.task || form.value.url !== props.task.url || form.value.refreshTime !== props.task.refreshTime
+  return form.value.task !== task.task || form.value.url !== task.url || form.value.refreshTime !== task.refreshTime
 })
 
 const confirm = useConfirm()
@@ -32,7 +33,7 @@ async function handleSubmit() {
     return
   }
 
-  if (props.task.refreshTime !== form.value.refreshTime) {
+  if (task.refreshTime !== form.value.refreshTime) {
     const confirmed = await confirm.open({
       title: 'Update Task',
       message: 'If you change the refresh time it might effect the checkins and streaks you have... are you okay with this?',
@@ -40,66 +41,55 @@ async function handleSubmit() {
     if (!confirmed) return
   }
 
-  props.task.task = form.value.task
-  props.task.url = form.value.url
-  props.task.refreshTime = form.value.refreshTime
+  task.task = form.value.task
+  task.url = form.value.url
+  task.refreshTime = form.value.refreshTime
 }
 
 const clockTime = useClock()
 
-// TODO: optimize this? isnt this run loop for all but for each item, i forgor this from refactoring index page
-const taskDetailDone = computed(() => {
-  const doneMap: Record<string, boolean> = {}
-  tasks.value.forEach((task) => {
-    if (!task.lastCheckin) {
-      doneMap[task.id] = false
-      return
-    }
-
-    doneMap[task.id] = isSameTZDay(task.lastCheckin, clockTime.value, task.refreshTime)
-  })
-  return doneMap
+const isDone = computed(() => {
+  if (!task) return false
+  if (!task.lastCheckin) return false
+  return isSameTZDay(task.lastCheckin, clockTime.value, task.refreshTime)
 })
 
-// TODO: optimize this? isnt this run loop for all but for each item, i forgor this from refactoring index page
-const taskDetailStreaks = computed(() => {
-  const counts: Record<string, number> = {}
-  tasks.value.forEach((task) => {
-    const taskCheckins = checkins.value.filter(checkin => checkin.taskId === task.id)
-    counts[task.id] = 0
+const taskStreaks = computed(() => {
+  let counts = 0
+  const taskCheckins = checkins.value.filter(checkin => checkin.taskId === task.id)
 
-    if (taskCheckins.length === 0) {
-      return
+  if (taskCheckins.length === 0) {
+    return
+  }
+
+  let currentStreak = 1
+
+  // assumed sorted by time ascending
+  for (let i = taskCheckins.length - 1; i > 0; i--) {
+    const currCheckin = taskCheckins[i]
+    const prevCheckin = taskCheckins[i - 1]
+    if (!currCheckin || !prevCheckin) break
+
+    const daysDiff = diffTZDays(currCheckin.createdAt, prevCheckin.createdAt, task.refreshTime)
+
+    if (daysDiff === 0) {
+      continue
     }
-
-    let currentStreak = 1
-
-    // assumed sorted by time ascending
-    for (let i = taskCheckins.length - 1; i > 0; i--) {
-      const currCheckin = taskCheckins[i]
-      const prevCheckin = taskCheckins[i - 1]
-      if (!currCheckin || !prevCheckin) break
-
-      const daysDiff = diffTZDays(currCheckin.createdAt, prevCheckin.createdAt, task.refreshTime)
-
-      if (daysDiff === 0) {
-        continue
-      }
-      else if (daysDiff === 1) {
-        currentStreak++
-      }
-      else {
-        break
-      }
+    else if (daysDiff === 1) {
+      currentStreak++
     }
-
-    const lastCheckin = taskCheckins[taskCheckins.length - 1]
-    if (lastCheckin) {
-      const daysSinceLast = diffTZDays(clockTime.value, lastCheckin.createdAt, task.refreshTime)
-
-      if (daysSinceLast <= 1) counts[task.id] = currentStreak
+    else {
+      break
     }
-  })
+  }
+
+  const lastCheckin = taskCheckins[taskCheckins.length - 1]
+  if (lastCheckin) {
+    const daysSinceLast = diffTZDays(clockTime.value, lastCheckin.createdAt, task.refreshTime)
+
+    if (daysSinceLast <= 1) counts = currentStreak
+  }
+
   return counts
 })
 
@@ -127,7 +117,7 @@ function checkinTask(id: string) {
   if (task && task.url) {
     window.open(task.url, '_blank')
   }
-  if (task && !taskDetailDone.value[id]) {
+  if (task && !isDone.value) {
     const now = new Date()
     task.lastCheckin = now
     checkins.value.push({
@@ -152,7 +142,7 @@ async function uncheckinTask(id: string) {
   if (!confirmed) {
     return
   }
-  if (!taskDetailDone.value[id]) return
+  if (!isDone.value) return
 
   const checkinIndex = checkins.value.findIndex((checkin) => {
     return checkin.taskId === id && task.lastCheckin && checkin.createdAt.getTime() === task.lastCheckin.getTime()
@@ -218,7 +208,7 @@ const isMobile = useIsMobile()
         </div>
         <div class="flex flex-row-reverse items-end gap-2 sm:flex-row">
           <!-- TODO: make the icons to be copyable? -->
-          <span v-if="taskDetailDone[task.id] && !editMode"
+          <span v-if="isDone && !editMode"
                 class="flex items-center justify-center text-base text-green-700"
           >
             <Icon name="mdi:check"
@@ -226,15 +216,15 @@ const isMobile = useIsMobile()
             />
             {{ dateFromNow(task.lastCheckin) }}
           </span>
-          <span v-if="((taskDetailStreaks[task.id] ?? 0) > 0) && !editMode"
+          <span v-if="((taskStreaks ?? 0) > 0) && !editMode"
                 class="flex items-center justify-center text-base"
-                :class="{ 'text-yellow-600': taskDetailDone[task.id], 'text-gray-600': !taskDetailDone[task.id] }"
+                :class="{ 'text-yellow-600': isDone, 'text-gray-600': !isDone }"
           >
             <Icon name="mdi:fire"
                   class="mr-1 h-5 w-5"
-                  :class="{ 'text-yellow-500': taskDetailDone[task.id], 'text-gray-500': !taskDetailDone[task.id] }"
+                  :class="{ 'text-yellow-500': isDone, 'text-gray-500': !isDone }"
             />
-            {{ taskDetailStreaks[task.id] }}
+            {{ taskStreaks }}
           </span>
           <span class="flex items-center justify-center text-base text-gray-600">
             <Icon name="mdi:refresh"
@@ -263,7 +253,7 @@ const isMobile = useIsMobile()
                 class="flex items-center justify-center rounded bg-cyan-100 p-2 text-cyan-600 hover:bg-cyan-200 hover:text-cyan-800"
                 @click.stop.prevent="checkinTask(task.id)"
         >
-          <Icon v-if="taskDetailDone[task.id]"
+          <Icon v-if="isDone"
                 name="mdi:check-bold"
                 class="h-5 w-5"
           />
@@ -298,15 +288,15 @@ const isMobile = useIsMobile()
           />
         </button>
         <button aria-label="Uncheck-in task"
-                :disabled="!taskDetailDone[task.id]"
+                :disabled="!isDone"
                 class="flex items-center justify-center rounded-none p-2 "
                 :class="{
-                  'bg-orange-100  text-orange-600 hover:bg-orange-200 hover:text-orange-800': taskDetailDone[task.id],
-                  'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-500': !taskDetailDone[task.id],
+                  'bg-orange-100  text-orange-600 hover:bg-orange-200 hover:text-orange-800': isDone,
+                  'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-500': !isDone,
                 }"
-                @click.stop.prevent="taskDetailDone[task.id] ? uncheckinTask(task.id) : null"
+                @click.stop.prevent="isDone ? uncheckinTask(task.id) : null"
         >
-          <Icon v-if="taskDetailDone[task.id]"
+          <Icon v-if="isDone"
                 name="mdi:fire-off"
                 class="h-5 w-5"
           />
