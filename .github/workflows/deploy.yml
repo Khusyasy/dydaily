@@ -14,9 +14,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: 'pnpm'
       # Pick your own package manager and build script
-      - run: npm install
-      - run: NUXT_APP_BASE_URL=/ npx nuxt build --preset github_pages
+      - run: pnpm install --frozen-lockfile
+      - run: NUXT_APP_BASE_URL=/ pnpm build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

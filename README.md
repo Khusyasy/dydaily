@@ -68,13 +68,7 @@ pnpm dev
 ### Build
 
 ```bash
-pnpm generate
-```
-
-or 
-
-```bash
-npx nuxt build --preset github_pages
+pnpm build
 ```
 
 ## Deploy to Github Pages
