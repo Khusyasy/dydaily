@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@10.30.3",
   "scripts": {
-    "build": "nuxt build",
+    "build": "nuxt build --preset github_pages",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
