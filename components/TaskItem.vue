@@ -158,6 +158,11 @@ async function uncheckinTask(id: string) {
 }
 
 const isMobile = useIsMobile()
+
+const lastCheckinDate = computed(() => {
+  void clockTime.value
+  return dateFromNow(task.lastCheckin)
+})
 </script>
 
 <template>
@@ -214,7 +219,7 @@ const isMobile = useIsMobile()
             <Icon name="mdi:check"
                   class="mr-1 h-5 w-5"
             />
-            {{ dateFromNow(task.lastCheckin) }}
+            {{ lastCheckinDate }}
           </span>
           <span v-if="((taskStreaks ?? 0) > 0) && !editMode"
                 class="flex items-center justify-center text-base"

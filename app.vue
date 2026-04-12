@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 useHead({
   title: 'DyDaily',
   meta: [
@@ -6,6 +6,28 @@ useHead({
     { name: 'viewport', content: 'width=device-width, initial-scale=1' },
   ],
 })
+
+const clockTime = useClock()
+
+let clockTimeout: ReturnType<typeof setTimeout>
+const clockSync = () => {
+  const now = new Date()
+  now.setMilliseconds(0)
+  clockTime.value = now
+
+  const msToNextSecond = 1000 - new Date().getMilliseconds()
+  clockTimeout = setTimeout(clockSync, msToNextSecond)
+}
+
+onMounted(() => {
+  const now = new Date()
+  now.setMilliseconds(0)
+  clockTime.value = now
+  const msToNextSecond = 1000 - new Date().getMilliseconds()
+  clockTimeout = setTimeout(clockSync, msToNextSecond)
+})
+
+onUnmounted(() => clearTimeout(clockTimeout))
 
 // const { $pwa } = useNuxtApp()
 
