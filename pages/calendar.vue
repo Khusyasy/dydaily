@@ -6,11 +6,16 @@ const nowDate = computed(() => now.value.getUTCDate())
 const curr = ref(new Date())
 const year = computed(() => curr.value.getUTCFullYear())
 const month = computed(() => curr.value.getUTCMonth() + 1)
-const firstDayOfMonth = computed(() => new Date(year.value, month.value - 1, 1).getUTCDay())
-const datesInMonth = computed(() => new Date(year.value, month.value, 0).getUTCDate())
+const firstDayOfMonth = computed(() => {
+  const day = (new Date(year.value, month.value - 1, 1).getUTCDay() + 1)
+  return day % 7
+})
+const datesInMonth = computed(() => new Date(year.value, month.value, 0).getUTCDate() + 1)
 const emptyDaysComplete = computed(() => {
   const total = firstDayOfMonth.value + datesInMonth.value
-  return total % 7 === 0 ? 0 : 7 - (total % 7)
+  let rest = total % 7 === 0 ? 0 : 7 - (total % 7)
+  if (total <= 4 * 7) rest += 7
+  return rest
 })
 
 function prevMonth() {
