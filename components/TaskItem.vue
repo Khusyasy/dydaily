@@ -54,44 +54,7 @@ const isDone = computed(() => {
   return isSameTZDay(task.lastCheckin, clockTime.value, task.refreshTime)
 })
 
-const taskStreaks = computed(() => {
-  let counts = 0
-  const taskCheckins = checkins.value.filter(checkin => checkin.taskId === task.id)
-
-  if (taskCheckins.length === 0) {
-    return
-  }
-
-  let currentStreak = 1
-
-  // assumed sorted by time ascending
-  for (let i = taskCheckins.length - 1; i > 0; i--) {
-    const currCheckin = taskCheckins[i]
-    const prevCheckin = taskCheckins[i - 1]
-    if (!currCheckin || !prevCheckin) break
-
-    const daysDiff = diffTZDays(currCheckin.createdAt, prevCheckin.createdAt, task.refreshTime)
-
-    if (daysDiff === 0) {
-      continue
-    }
-    else if (daysDiff === 1) {
-      currentStreak++
-    }
-    else {
-      break
-    }
-  }
-
-  const lastCheckin = taskCheckins[taskCheckins.length - 1]
-  if (lastCheckin) {
-    const daysSinceLast = diffTZDays(clockTime.value, lastCheckin.createdAt, task.refreshTime)
-
-    if (daysSinceLast <= 1) counts = currentStreak
-  }
-
-  return counts
-})
+const taskStreaks = computed(() => calculateLastStreak(task, checkins.value, clockTime.value))
 
 async function removeTask(id: string) {
   const index = tasks.value.findIndex(task => task.id === id)
