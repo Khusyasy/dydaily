@@ -6,6 +6,7 @@ export default defineNuxtConfig({
     '@nuxt/icon',
     '@nuxtjs/tailwindcss',
     '@vite-pwa/nuxt',
+    '@nuxt/test-utils/module',
   ],
   ssr: false,
   devtools: { enabled: true },
