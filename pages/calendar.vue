@@ -1,16 +1,13 @@
 <script setup lang="ts">
 const now = ref(new Date())
-const nowYear = computed(() => now.value.getUTCFullYear())
-const nowMonth = computed(() => now.value.getUTCMonth() + 1)
-const nowDate = computed(() => now.value.getUTCDate())
+const nowYear = computed(() => now.value.getFullYear())
+const nowMonth = computed(() => now.value.getMonth() + 1)
+const nowDate = computed(() => now.value.getDate())
 const curr = ref(new Date())
-const year = computed(() => curr.value.getUTCFullYear())
-const month = computed(() => curr.value.getUTCMonth() + 1)
-const firstDayOfMonth = computed(() => {
-  const day = (new Date(year.value, month.value - 1, 1).getUTCDay() + 1)
-  return day % 7
-})
-const datesInMonth = computed(() => new Date(year.value, month.value, 0).getUTCDate() + 1)
+const year = computed(() => curr.value.getFullYear())
+const month = computed(() => curr.value.getMonth() + 1)
+const firstDayOfMonth = computed(() => new Date(year.value, month.value - 1, 1).getDay())
+const datesInMonth = computed(() => new Date(year.value, month.value, 0).getDate())
 const emptyDaysComplete = computed(() => {
   const total = firstDayOfMonth.value + datesInMonth.value
   let rest = total % 7 === 0 ? 0 : 7 - (total % 7)
@@ -19,21 +16,11 @@ const emptyDaysComplete = computed(() => {
 })
 
 function prevMonth() {
-  if (month.value <= 1) {
-    curr.value = new Date(year.value - 1, 12, 1)
-  }
-  else {
-    curr.value = new Date(year.value, month.value - 1, 1)
-  }
+  curr.value = new Date(year.value, month.value - 2, 1)
 }
 
 function nextMonth() {
-  if (month.value >= 12) {
-    curr.value = new Date(year.value + 1, 1, 1)
-  }
-  else {
-    curr.value = new Date(year.value, month.value + 1, 1)
-  }
+  curr.value = new Date(year.value, month.value, 1)
 }
 
 const { tasks, checkins } = useTaskStore()
